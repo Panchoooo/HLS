@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>HLS | Login</title>
+  <meta charset="UTF-8">
+  <meta descryption="Login" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./css/Login.css">
+</head>
+
+<body class="page-background">
+
+  <div class="container-general">
+    <div class="container-background">
+
+      <div class="container-login">
+        <div class="container-login-body">
+          <form class="form" action="javascript:Login()">
+
+            <h2 class="login-titulo">Bienvenido</h2>
+            <span class="login-subtitulo"><b>Live Streaming HLS</b></span>
+
+            <div style="margin-top:30px"></div>
+
+            <div class="control">
+              <label style="color: #E4EAEF;" class="label" for="pass"><img src="./img/perfil.png"
+                  style="height:40px;width:auto"></label>
+              <input id="username" class="input" type="text" placeholder="Nombre Usuario">
+            </div>
+
+            <div style="display:flex;border-bottom: 1px solid #E4EAEF;" class="control">
+              <label style="color: #E4EAEF;" class="label" for="pass"><img src="./img/contrasena.png"
+                  style="height:40px;width:auto"></label>
+              <input id="password" class="input" type="password" placeholder="Contraseña">
+            </div>
+
+
+            <div class="submit">
+              <input class="button" type="submit" value="Entrar" />
+            </div>
+
+            <div style="margin-top: 20px;">
+              <a class="link-register" href="./Registro.html">¿No tiene una cuenta? Registrate</a>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+
+  <script src="./js/Login.js"></script>
+</body>
+
+</html>
