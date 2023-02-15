@@ -1,6 +1,6 @@
 Para ejecutar:
 
-    # docker compose up
+    docker compose up
     
 HLS Server:
 
