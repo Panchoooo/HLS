@@ -1,6 +1,8 @@
 //var videoSrc = 'https://mcdn.daserste.de/daserste/de/master.m3u8';
+const proxy = "http://localhost:3000";
 //var videoSrc = 'https://mcdn.daserste.de/daserste/int/master_1920p_5000.m3u8';
-var videoSrc = "http://192.168.1.90:3000/getLive/" + window.localStorage.getItem("live")
+
+var videoSrc = proxy+"/getLive/" + window.localStorage.getItem("live")
 
 console.log(videoSrc)
 var video = document.getElementById('video');

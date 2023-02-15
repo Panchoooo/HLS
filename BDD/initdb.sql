@@ -256,7 +256,7 @@ CREATE TABLE IF NOT EXISTS `parametros` (
 
 DELETE FROM `parametros`;
 INSERT INTO `parametros` (`id`, `proxy`, `cantidad_fragmentos`) VALUES
-	(1, 'http://192.168.1.90:3000', 3);
+	(1, 'http://localhost:3000', 3);
 
 CREATE TABLE IF NOT EXISTS `usuarios` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

@@ -51,7 +51,7 @@ async function conectar(){
 }
 
 async function iniciar(){
-    await delay(15000)
+    await delay(20000)
     conectar();
     await delay(2000)
     Actualizador();
@@ -103,7 +103,7 @@ async function doqry(qry){
         401: Credenciales invalidas
         402: Error conexion
 */
-app.post(['/','/login'], (req, res) => {
+app.post('/login', (req, res) => {
     try {
         // Obtiene informacion del usuario
         const { username, password } = req.body;

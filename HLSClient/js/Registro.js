@@ -1,4 +1,5 @@
-const proxy = "http://192.168.1.90:3000";
+//const proxy = "http://192.168.1.90:3000";
+const proxy = "http://localhost:3000";
 
 // Funcion para obtener autentificar usuario
 async function Login(username, password) {
