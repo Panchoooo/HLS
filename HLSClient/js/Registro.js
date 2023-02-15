@@ -28,14 +28,41 @@ async function Login(username, password) {
       console.log(result)
       var json = JSON.parse(result)
       if (json["error"] == null) {
-        window.location.href = "./Login.html";
+        Swal.fire({
+          title: 'Registrado !',
+          text: "Se ha registrado exitosamente",
+          icon: 'success',
+          showCancelButton: false,
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Aceptar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = "./Login.html";
+          }
+        })
       } else {
-        alert(json["mesagge"])
+        Swal.fire({
+          title: 'Ha ocurrido un problema !',
+          text: "Motivo: "+json["mesagge"],
+          icon: 'warning',
+          showCancelButton: false,
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Aceptar'
+        })
+
       }
     }
     )
     .catch(error => {
       console.log('error', error)
+      Swal.fire({
+        title: 'Ha ocurrido un problema !',
+        text: "Motivo: " +error,
+        icon: 'warning',
+        showCancelButton: false,
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Aceptar'
+      })
     });
 }
 
