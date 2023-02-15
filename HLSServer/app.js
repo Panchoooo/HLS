@@ -24,45 +24,41 @@ console.log(process.env.DB_PASSWORD)
 console.log(process.env.DB_NAME)
 
 var connection = null
-async function conectar(){
-
+// Funcion auxiliar para realizar una conexion a bdd
+async function conectar() {
     // Conexion a bdd
     connection = mysql.createConnection({
         host: process.env.DB_HOST,
-        port:process.env.DB_PORT,
+        port: process.env.DB_PORT,
         user: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
     });
     try {
-        connection.connect(function(err) {
+        connection.connect(function (err) {
             if (err) {
-                console.log(err)
-                console.log("ERROR AL CONECTAR")
+                console.log("HLS-Server: Error al conectar a BDD")
                 return -1;
             }
-            console.log("ME LOGRE CONECTAR")
+            console.log("HLS-Server: Conexion realizada")
+            Actualizador();
             return 1;
         });
-
-        } catch (error) {
-            return -1;
-        }
+    } catch (error) {
+        return -1;
+    }
 }
 
-async function iniciar(){
-    await delay(20000)
-    conectar();
-    await delay(2000)
-    Actualizador();
+// Funcion que corrobora que se logra generar una conexion a bdd
+async function TryConnect() {
+    while (connection == null || connection.state === 'disconnected') {
+        console.log("HLS-Server: Intentando conectar...")
+        r = await conectar();
+        await delay(10000)
+    }
 }
 
-
-(async () => {
-    await iniciar();
-})();
-
-  
+TryConnect();
 // Inicio servidor express
 var app = express();
 const server = app.listen(process.env.SERVER_PORT);
@@ -80,13 +76,13 @@ app.use(function (req, res, next) {
 // Inicio actualizacion Lives
 
 
-  
+
 // Funcion auxiliar para realizar Querys a BDD 
-async function doqry(qry){
+async function doqry(qry) {
     try {
-        return new Promise((resolve, reject)=>{
-            connection.query(qry,  (error, elements)=>{
-                if(error){
+        return new Promise((resolve, reject) => {
+            connection.query(qry, (error, elements) => {
+                if (error) {
                     return reject(error);
                 }
                 return resolve(elements);
@@ -107,7 +103,7 @@ app.post('/login', (req, res) => {
     try {
         // Obtiene informacion del usuario
         const { username, password } = req.body;
-        console.log(username,password)
+        console.log(username, password)
 
         var qry = `SELECT * FROM usuarios WHERE username='${username}' and password=AES_ENCRYPT('${password}','${process.env.HLSPASSWORD}')`;
         console.log(qry)
@@ -119,9 +115,9 @@ app.post('/login', (req, res) => {
                     const accessToken = jwt.sign({ username: results[0].username, role: results[0].role }, accessTokenSecret, { expiresIn: '20m' });
                     const refreshToken = jwt.sign({ username: results[0].username, role: results[0].role }, refreshTokenSecret);
                     var error = null
-    
+
                     refreshTokens.push(refreshToken);
-    
+
                     res.json({
                         accessToken,
                         refreshToken,
@@ -132,7 +128,7 @@ app.post('/login', (req, res) => {
                     res.json({
                         error
                     })
-                }  
+                }
             } catch (error) {
                 console.log(error)
                 console.log("Error DB")
@@ -313,7 +309,7 @@ app.get('/Obs/Obs', authenticateJWT, (req, res) => {
 
 // Funcion que actualiza LIVE en particular
 // Live (str) : Nombre live
-async function ActualizarLive(Live){
+async function ActualizarLive(Live) {
 
     var parametros = await doqry("SELECT cantidad_fragmentos,proxy FROM parametros LIMIT 1");
     var cantidadALeer = parametros[0].cantidad_fragmentos;
@@ -332,21 +328,21 @@ async function ActualizarLive(Live){
 #EXT-X-MEDIA-SEQUENCE:${fragmentoActual}`;
 
     // Añadimos la cantidad de segmentos al template
-    for(var s = 0  ; s < cantidadALeer ; s++){
-        var segmentos = await doqry(`SELECT segmento,duracion FROM lives_fragmentos WHERE id_live = ${Live.id} AND (numero = ${(fragmentoActual+s)%cantidadFragmentos}  ) `)
+    for (var s = 0; s < cantidadALeer; s++) {
+        var segmentos = await doqry(`SELECT segmento,duracion FROM lives_fragmentos WHERE id_live = ${Live.id} AND (numero = ${(fragmentoActual + s) % cantidadFragmentos}  ) `)
         // Si algun segmento no se encuentra, error
-        if(segmentos.length==0){
+        if (segmentos.length == 0) {
             console.log(`${nombreLive} | No se encuentran los fragmentos solicitados`)
             return -1;
         }
 
-        filem3u8+=`
+        filem3u8 += `
 #EXTINF:${segmentos[0].duracion},
 ${proxy}/${nombreLive}/${segmentos[0].segmento}`
     }
 
     // Actualizar fragmento actual a leer
-    if (fragmentoActual + cantidadALeer == cantidadFragmentos-1) {
+    if (fragmentoActual + cantidadALeer == cantidadFragmentos - 1) {
         fragmentoActual = 0;
         await doqry(`UPDATE lives SET fragmento_actual = 0 WHERE id = ${id_live}`)
     }
@@ -370,8 +366,8 @@ ${proxy}/${nombreLive}/${segmentos[0].segmento}`
 // Funcion encargada de actualizar lives Activos
 async function LiveActivos() {
     var qry = `SELECT id,Nombre,cantidad_fragmentos,fragmento_actual FROM lives where activo = 1`;
-    var lives = await  doqry(qry);
-    for(var i = 0 ; i < lives.length ; i ++){ // Solicitamos actualizar cada live activo
+    var lives = await doqry(qry);
+    for (var i = 0; i < lives.length; i++) { // Solicitamos actualizar cada live activo
         console.log(`Actualizando live : ${lives[i].Nombre}`);
         try {
             await ActualizarLive(lives[i]);
@@ -390,7 +386,7 @@ async function Actualizador() {
         try {
             await LiveActivos();
         } catch (error) {
-            console.log("Error actualizando lives !");            
+            console.log("Error actualizando lives !");
         }
     }
 }
@@ -399,27 +395,27 @@ async function Actualizador() {
 // Funcion utilizada de manera auxiliar para cargar Videos a BDD
 // Live (str): Nombre del live
 // Cheaders (int): Cantidad de lineas superiores a ignorar
-async function cargarStream(Live,descripcion,Cheaders = 4){
+async function cargarStream(Live, descripcion, Cheaders = 4) {
     const buffer = fs.readFileSync(`.${PathLives}/${Live}/output.m3u8`);
     const fileContent = buffer.toString();
     filas = fileContent.split("\n")
-    await doqry(`INSERT INTO lives (Nombre,descripcion,portada_path,cantidad_fragmentos,fragmento_actual,activo) VALUES ('${Live}','${descripcion}','.${PathLives}/${Live}/portada.png', ${(filas.length-1)/2-(Cheaders-1)},0 , 1)`)
+    await doqry(`INSERT INTO lives (Nombre,descripcion,portada_path,cantidad_fragmentos,fragmento_actual,activo) VALUES ('${Live}','${descripcion}','.${PathLives}/${Live}/portada.png', ${(filas.length - 1) / 2 - (Cheaders - 1)},0 , 1)`)
     var id = await doqry("SELECT id FROM lives ORDER BY id DESC LIMIT 1 ")
     id = id[0].id;
-    for(var i = Cheaders; i < filas.length-1 ; i+=2){
-        var infoSeg = filas[i].replace(",","").replace("#EXTINF:","");
+    for (var i = Cheaders; i < filas.length - 1; i += 2) {
+        var infoSeg = filas[i].replace(",", "").replace("#EXTINF:", "");
         var tSeg = infoSeg
-        var nSeg = filas[i+1].replace(".ts","")
-        await doqry(`INSERT INTO lives_fragmentos (id_live,segmento,duracion,numero) VALUES (${id},'${nSeg}','${tSeg}',${(i-Cheaders)/2})`)
+        var nSeg = filas[i + 1].replace(".ts", "")
+        await doqry(`INSERT INTO lives_fragmentos (id_live,segmento,duracion,numero) VALUES (${id},'${nSeg}','${tSeg}',${(i - Cheaders) / 2})`)
     }
 }
 
 // Funcion auxiliar para crear ejemplos
-async function RegistrarLives(){
-    await cargarStream("Conejo","El conejo que vive en un paraíso bucólico de bonitas praderas, árboles fruteros, pájaros y mariposas, es llevado al límite por la destrucción y crueldad de tres pequeños roedores.")
-    await cargarStream("Malcom","Los Cleavers son una familia peculiar. La madre es una crontroladora radical que grita, el padre es un hombre chistoso calvo, el hijo mayor, Francis huyo de la familia a corta edad, Reese es un criminal, Dewey es un cadete espacial y el joven Jamie es un chivo expiatorio. ")
-    await cargarStream("Sherk","Un ogro llamado Shrek vive en su pantano, pero su preciada soledad se ve súbitamente interrumpida por la invasión de los ruidosos personajes de los cuentos de hadas. Todos fueron expulsados de sus reinos por el malvado Lord Farquaad.")
-    
+async function RegistrarLives() {
+    await cargarStream("Conejo", "El conejo que vive en un paraíso bucólico de bonitas praderas, árboles fruteros, pájaros y mariposas, es llevado al límite por la destrucción y crueldad de tres pequeños roedores.")
+    await cargarStream("Malcom", "Los Cleavers son una familia peculiar. La madre es una crontroladora radical que grita, el padre es un hombre chistoso calvo, el hijo mayor, Francis huyo de la familia a corta edad, Reese es un criminal, Dewey es un cadete espacial y el joven Jamie es un chivo expiatorio. ")
+    await cargarStream("Sherk", "Un ogro llamado Shrek vive en su pantano, pero su preciada soledad se ve súbitamente interrumpida por la invasión de los ruidosos personajes de los cuentos de hadas. Todos fueron expulsados de sus reinos por el malvado Lord Farquaad.")
+
 }
 
 //RegistrarLives()
