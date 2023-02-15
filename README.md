@@ -1,7 +1,9 @@
 Para ejecutar:
+
     # docker compose up
     
 HLS Server:
+
     Crear archivo .env con las siguientes variables
 
     # DATABASE
