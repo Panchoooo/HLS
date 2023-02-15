@@ -8,6 +8,18 @@ async function Login(username, password) {
   var passwordC = document.getElementById("passwordC").value
   var email = document.getElementById("email").value
 
+  if(password != passwordC){
+    Swal.fire({
+      title: 'Ha ocurrido un problema !',
+      text: "Motivo: Contraseñas deben ser identicas",
+      icon: 'warning',
+      showCancelButton: false,
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'Aceptar'
+    })
+    return;
+  }
+
 
   var headers = new Headers();
   headers.append("Content-Type", "application/json");
