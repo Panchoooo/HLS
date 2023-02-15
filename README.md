@@ -4,7 +4,7 @@ Para ejecutar:
     
 HLS Server:
 
-    Crear archivo .env con las siguientes variables
+    Crear archivo .env en carpeta HLSServer con los siguientes parametros
 
     # DATABASE
     DB_NAME=hls
