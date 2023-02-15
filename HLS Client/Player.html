@@ -3,14 +3,19 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>HLS Player</title>
+    <title>HLS | Player</title>
     <link rel="stylesheet" href="./css/Player.css">
 </head>
 
 <body>
+    <div id="volver" class="volver-container" onclick="window.location.href='./Menu.html'">
+        <button class="volver">❮</button>
+    </div>
+
     <video id="video" width="100%" height="auto" controls muted autoplay="autoplay" playsinline preload=""></video>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="./js/Video.js"></script>
+
 </body>
 
 </html>
