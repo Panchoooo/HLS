@@ -147,3 +147,17 @@ body.page-background:before {
 a {
     text-decoration: none;
 }
+
+.icon-form {
+    height: 40px;
+    width: auto
+}
+
+.label {
+    color: #E4EAEF;
+}
+
+.control {
+    display: flex;
+    border-bottom: 1px solid #E4EAEF;
+}

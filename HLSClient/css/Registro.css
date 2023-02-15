@@ -146,3 +146,17 @@ body.page-background:before {
     color: #E4EAEF;
     font-weight: bold;
 }
+
+.icon-form {
+    height: 40px;
+    width: auto
+}
+
+.label {
+    color: #E4EAEF;
+}
+
+.control {
+    display: flex;
+    border-bottom: 1px solid #E4EAEF;
+}
