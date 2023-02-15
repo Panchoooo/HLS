@@ -1,11 +1,13 @@
 
-const PORT = 3000;
 // Librerias
+require('dotenv').config()
 const mysql = require('mysql'); // BDD
 const hls = require('hls-server'); // Libreria para HLS - Server
 const fs = require('fs'); // Archivos
 const express = require('express'); // Server
 const delay = ms => new Promise(res => setTimeout(res, ms)); // Funcion auxiliar delay
+
+var PathLives = process.env.PATH_LIVES; // Ruta de la direccion donde se almacenan todos los lives   
 
 // Librerias para autentificacion
 const bodyParser = require('body-parser');
@@ -14,24 +16,69 @@ const accessTokenSecret = 'HLSServer';
 const refreshTokenSecret = 'HLSServer';
 let refreshTokens = [];
 
-var PathLives = "/src/lives"; // Ruta de la direccion donde se almacenan todos los lives   
 
-// Conexion a bdd
-const connection = mysql.createConnection({
-    host: '127.0.0.1',
-    port:3306,
-    user: 'root',
-    password: '',
-    database: 'hls'
+console.log(process.env.DB_HOST)
+console.log(process.env.DB_PORT)
+console.log(process.env.DB_USERNAME)
+console.log(process.env.DB_PASSWORD)
+console.log(process.env.DB_NAME)
+
+var connection = null
+async function conectar(){
+
+    // Conexion a bdd
+    connection = mysql.createConnection({
+        host: process.env.DB_HOST,
+        port:process.env.DB_PORT,
+        user: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+    });
+    try {
+        connection.connect(function(err) {
+            if (err) {
+                console.log(err)
+                console.log("ERROR AL CONECTAR")
+                return -1;
+            }
+            console.log("ME LOGRE CONECTAR")
+            return 1;
+        });
+
+        } catch (error) {
+            return -1;
+        }
+}
+
+async function iniciar(){
+    await delay(15000)
+    conectar();
+    await delay(2000)
+    Actualizador();
+}
+
+
+(async () => {
+    await iniciar();
+})();
+
+  
+// Inicio servidor express
+var app = express();
+const server = app.listen(process.env.SERVER_PORT);
+
+// Configuracion del server
+app.use(bodyParser.json());
+app.use(function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers,Authorization,Access-Control-Allow-Origin");
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    next();
 });
 
-connection.connect(function(err) {
-    if (err) {
-      return console.error('error: ' + err.message);
-    }
-  
-    console.log('Connected to the MySQL server.');
-  });
+// Inicio actualizacion Lives
+
 
   
 // Funcion auxiliar para realizar Querys a BDD 
@@ -50,38 +97,24 @@ async function doqry(qry){
     }
 }
 
-// Inicio servidor express
-var app = express();
-const server = app.listen(PORT);
-
-// Configuracion del server
-app.use(bodyParser.json());
-app.use(function (req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers,Authorization,Access-Control-Allow-Origin");
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    next();
-});
-
-
-
 /* Autentificacion */
 /*
     Errores:
         401: Credenciales invalidas
         402: Error conexion
 */
-app.post('/login', (req, res) => {
+app.post(['/','/login'], (req, res) => {
     try {
         // Obtiene informacion del usuario
         const { username, password } = req.body;
         console.log(username,password)
 
-        var qry = `SELECT * FROM usuarios WHERE username='${username}' and password=AES_ENCRYPT('${password}','HLS')`;
+        var qry = `SELECT * FROM usuarios WHERE username='${username}' and password=AES_ENCRYPT('${password}','${process.env.HLSPASSWORD}')`;
+        console.log(qry)
         connection.query(qry, function (error, results) {
             try {
                 if (results.length != 0) {
+                    console.log(results)
                     // En caso de ser valido se genera el token
                     const accessToken = jwt.sign({ username: results[0].username, role: results[0].role }, accessTokenSecret, { expiresIn: '20m' });
                     const refreshToken = jwt.sign({ username: results[0].username, role: results[0].role }, refreshTokenSecret);
@@ -107,6 +140,7 @@ app.post('/login', (req, res) => {
 
         });
     } catch (error) {
+        console.log(error)
         error = 402
         res.json({
             error
@@ -143,7 +177,7 @@ app.post('/registro', (req, res) => {
                 json = { error, mesagge }
                 res.json(json);
             } else { // En caso de no existir, es agregado a la BDD
-                var qry = `INSERT INTO usuarios (username,password,email) VALUES ('${username}',AES_ENCRYPT('${password}','HLS'),'${email}')`;
+                var qry = `INSERT INTO usuarios (username,password,email) VALUES ('${username}',AES_ENCRYPT('${password}','${process.env.HLSPASSWORD}'),'${email}')`;
                 connection.query(qry, function (error, results) {
                     mesagge = "Usuario registrado exitosamente !";
                     json = { error, mesagge }
@@ -360,7 +394,6 @@ async function Actualizador() {
         }
     }
 }
-Actualizador();
 
 
 // Funcion utilizada de manera auxiliar para cargar Videos a BDD

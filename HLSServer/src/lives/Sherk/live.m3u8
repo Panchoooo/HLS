@@ -1,10 +1,10 @@
 #EXTM3U
 #EXT-X-VERSION:3
 #EXT-X-TARGETDURATION:10
-#EXT-X-MEDIA-SEQUENCE:585
+#EXT-X-MEDIA-SEQUENCE:1321
+#EXTINF:7.774433,
+http://192.168.1.90:3000/Sherk/intro-shrek-1-hd-espanol-latino7
+#EXTINF:9.809800,
+http://192.168.1.90:3000/Sherk/intro-shrek-1-hd-espanol-latino8
 #EXTINF:11.911900,
 http://192.168.1.90:3000/Sherk/intro-shrek-1-hd-espanol-latino9
-#EXTINF:8.141467,
-http://192.168.1.90:3000/Sherk/intro-shrek-1-hd-espanol-latino10
-#EXTINF:9.509500,
-http://192.168.1.90:3000/Sherk/intro-shrek-1-hd-espanol-latino11

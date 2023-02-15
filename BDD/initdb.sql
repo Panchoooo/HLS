@@ -7,6 +7,9 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+CREATE DATABASE IF NOT EXISTS hls ;
+USE hls;
+
 CREATE TABLE IF NOT EXISTS `lives` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(50) DEFAULT NULL,
@@ -17,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `lives` (
   `activo` int(11) DEFAULT NULL,
   `prioridad` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
 
 DELETE FROM `lives`;
 INSERT INTO `lives` (`id`, `nombre`, `portada_path`, `descripcion`, `cantidad_fragmentos`, `fragmento_actual`, `activo`, `prioridad`) VALUES
@@ -36,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `lives_fragmentos` (
   `duracion` varchar(150) DEFAULT NULL,
   `numero` double DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=160 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
 
 DELETE FROM `lives_fragmentos`;
 INSERT INTO `lives_fragmentos` (`id`, `id_live`, `segmento`, `duracion`, `numero`) VALUES
@@ -249,7 +252,7 @@ CREATE TABLE IF NOT EXISTS `parametros` (
   `proxy` varchar(50) NOT NULL DEFAULT '0',
   `cantidad_fragmentos` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
 
 DELETE FROM `parametros`;
 INSERT INTO `parametros` (`id`, `proxy`, `cantidad_fragmentos`) VALUES
@@ -262,7 +265,7 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `password` blob DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
 
 DELETE FROM `usuarios`;
 INSERT INTO `usuarios` (`id`, `username`, `email`, `password`) VALUES

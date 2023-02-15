@@ -58,7 +58,7 @@ async function getLives() {
 
           var inner = `
               <div class="live" onclick="SelectLive('${lives[i]["Nombre"]}')" >
-                <img class="live-img" src="http://192.168.1.90:3000/portada/${lives[i]["Nombre"]}" >
+                <img class="live-img" src="${proxy}/portada/${lives[i]["Nombre"]}" >
                 <div class="live-title">
                     <b class="live-name">${lives[i]["Nombre"]}</b><br><div class="live-description" style="">${descripcion}</div>
                 </div>

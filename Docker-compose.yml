@@ -1,0 +1,60 @@
+version: '1'
+
+services:
+
+  hls-db:
+    build: ./BDD
+    stdin_open: true
+    tty: true
+    container_name: hls-db
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=hls
+    volumes:
+      - dbdata:/var/lib/mariadb
+      - ./BDD/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+    networks:
+      - networks-backend
+
+  hls-server:    
+    stdin_open: true
+    tty: true
+    build: ./HLSServer
+    depends_on:
+      - hls-db
+    container_name: hls-server
+    environment:
+      - DB_SERVER=hls-db
+    ports:
+      - 3000:3000
+    links:
+      - hls-db
+    networks:
+      - networks-backend
+      - networks-frontend
+
+  hls-cliente:
+    stdin_open: true
+    tty: true
+    build: ./HLSClient
+    depends_on:
+      - hls-db
+      - hls-server
+    container_name: hls-cliente
+    environment:
+      - DB_SERVER=hls-db
+    ports:
+      - 8000:80
+    links:
+      - hls-server
+    networks:
+      - networks-frontend
+
+networks:
+  networks-backend:
+  networks-frontend:
+volumes:
+  dbdata:
