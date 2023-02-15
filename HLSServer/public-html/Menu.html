@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>HLS | Menu</title>
+    <link rel="stylesheet" href="./css/Menu.css">
+</head>
+
+<body>
+
+    <div class="container-global">
+
+        <div class="header">
+            <div class="header-name">
+                <div style="margin-right: 11px;"> HLS LiveStream </div>
+                <img class="icon-tv" src="./img/tv.png">
+            </div>
+            <div class="header-content">
+                <div id="nombre"></div>
+                <div style="font-size:12px;margin-top:8px;cursor:pointer" onclick="Logout()">Cerrar sesión</div>
+            </div>
+        </div>
+
+        <div class="container-content">
+            <div class="text-live">En vivo <svg height="100" width="50" class="blinking">
+                <circle cx="20" cy="50" r="10" fill="red" />
+                Sorry, your browser does not support inline SVG.  
+              </svg> </div>
+            <div class="container-lives" id="lives">
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <script src="./js/Menu.js"></script>
+</body>
+
+</html>

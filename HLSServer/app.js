@@ -1,7 +1,5 @@
-// Proxy
-const PORT = 3000;
-const proxy = `http://192.168.1.90:${PORT}`;
 
+const PORT = 3000;
 // Librerias
 const mysql = require('mysql'); // BDD
 const hls = require('hls-server'); // Libreria para HLS - Server
@@ -16,15 +14,26 @@ const accessTokenSecret = 'HLSServer';
 const refreshTokenSecret = 'HLSServer';
 let refreshTokens = [];
 
-var PathLives = "./src/lives"; // Ruta de la direccion donde se almacenan todos los lives   
+var PathLives = "/src/lives"; // Ruta de la direccion donde se almacenan todos los lives   
 
 // Conexion a bdd
 const connection = mysql.createConnection({
-    host: 'localhost',
+    host: '127.0.0.1',
+    port:3306,
     user: 'root',
     password: '',
     database: 'hls'
 });
+
+connection.connect(function(err) {
+    if (err) {
+      return console.error('error: ' + err.message);
+    }
+  
+    console.log('Connected to the MySQL server.');
+  });
+
+  
 // Funcion auxiliar para realizar Querys a BDD 
 async function doqry(qry){
     try {
@@ -67,28 +76,35 @@ app.post('/login', (req, res) => {
     try {
         // Obtiene informacion del usuario
         const { username, password } = req.body;
+        console.log(username,password)
 
         var qry = `SELECT * FROM usuarios WHERE username='${username}' and password=AES_ENCRYPT('${password}','HLS')`;
         connection.query(qry, function (error, results) {
-            if (results.length != 0) {
-                // En caso de ser valido se genera el token
-                const accessToken = jwt.sign({ username: results[0].username, role: results[0].role }, accessTokenSecret, { expiresIn: '20m' });
-                const refreshToken = jwt.sign({ username: results[0].username, role: results[0].role }, refreshTokenSecret);
-                var error = null
-
-                refreshTokens.push(refreshToken);
-
-                res.json({
-                    accessToken,
-                    refreshToken,
-                    error
-                });
-            } else { // Caso contrario enviamos error
-                error = 401
-                res.json({
-                    error
-                })
+            try {
+                if (results.length != 0) {
+                    // En caso de ser valido se genera el token
+                    const accessToken = jwt.sign({ username: results[0].username, role: results[0].role }, accessTokenSecret, { expiresIn: '20m' });
+                    const refreshToken = jwt.sign({ username: results[0].username, role: results[0].role }, refreshTokenSecret);
+                    var error = null
+    
+                    refreshTokens.push(refreshToken);
+    
+                    res.json({
+                        accessToken,
+                        refreshToken,
+                        error
+                    });
+                } else { // Caso contrario enviamos error
+                    error = 401
+                    res.json({
+                        error
+                    })
+                }  
+            } catch (error) {
+                console.log(error)
+                console.log("Error DB")
             }
+
         });
     } catch (error) {
         error = 402
@@ -184,7 +200,7 @@ const authenticateJWT = (req, res, next) => {
 // live (str) : Nombre live
 app.get('/getLive/:live', authenticateJWT, (req, res) => {
     var live = req.params.live;
-    return res.status(200).sendFile(`${__dirname}/src/lives/${live}/live.m3u8`);
+    return res.status(200).sendFile(`${__dirname}${PathLives}/${live}/live.m3u8`);
 });
 
 // Solicitud para obtener los fragmentos .ts del Live respectivo
@@ -192,7 +208,7 @@ app.get('/getLive/:live', authenticateJWT, (req, res) => {
 app.get('/portada/:live', (req, res) => {
     var live = req.params.live;
     console.log(live)
-    return res.status(200).sendFile(`${__dirname}/src/lives/${live}/portada.png`);
+    return res.status(200).sendFile(`${__dirname}${PathLives}/${live}/portada.png`);
 });
 
 // Solicitud para obtener los fragmentos .ts del Live respectivo
@@ -200,7 +216,7 @@ app.get('/portada/:live', (req, res) => {
 app.get('/:live/:segmento', authenticateJWT, (req, res) => {
     var live = req.params.live;
     var seg = req.params.segmento;
-    return res.status(200).sendFile(`${__dirname}/src/lives/${live}/${seg}.ts`);
+    return res.status(200).sendFile(`${__dirname}${PathLives}/${live}/${seg}.ts`);
 });
 
 // Encargadas de solicitudes archivos .m3u8 y .ts
@@ -265,8 +281,9 @@ app.get('/Obs/Obs', authenticateJWT, (req, res) => {
 // Live (str) : Nombre live
 async function ActualizarLive(Live){
 
-    var parametros = await doqry("SELECT cantidad_fragmentos FROM parametros LIMIT 1");
+    var parametros = await doqry("SELECT cantidad_fragmentos,proxy FROM parametros LIMIT 1");
     var cantidadALeer = parametros[0].cantidad_fragmentos;
+    var proxy = parametros[0].proxy;
 
     // Info Live General
     var id_live = Live.id;
@@ -274,19 +291,13 @@ async function ActualizarLive(Live){
     var cantidadFragmentos = Live.cantidad_fragmentos;
     var fragmentoActual = Live.fragmento_actual
 
-    // Obtenemos fragmentos respectivos a leer
-    /*var segmentos = await doqry(`SELECT segmento,duracion FROM lives_fragmentos WHERE id_live = ${Live.id} AND (numero = ${fragmentoActual%cantidadFragmentos} OR numero = ${(fragmentoActual%cantidadFragmentos)+1} OR numero = ${(fragmentoActual+2)%cantidadFragmentos} ) `)
-    if(segmentos.length<3){
-        console.log("No se encuentran los fragmentos solicitados")
-        return -1;
-    }*/
     // Template archivo m3u8
-    var file = `#EXTM3U
+    var filem3u8 = `#EXTM3U
 #EXT-X-VERSION:3
 #EXT-X-TARGETDURATION:10
 #EXT-X-MEDIA-SEQUENCE:${fragmentoActual}`;
 
-
+    // Añadimos la cantidad de segmentos al template
     for(var s = 0  ; s < cantidadALeer ; s++){
         var segmentos = await doqry(`SELECT segmento,duracion FROM lives_fragmentos WHERE id_live = ${Live.id} AND (numero = ${(fragmentoActual+s)%cantidadFragmentos}  ) `)
         // Si algun segmento no se encuentra, error
@@ -295,7 +306,7 @@ async function ActualizarLive(Live){
             return -1;
         }
 
-        file+=`
+        filem3u8+=`
 #EXTINF:${segmentos[0].duracion},
 ${proxy}/${nombreLive}/${segmentos[0].segmento}`
     }
@@ -311,7 +322,7 @@ ${proxy}/${nombreLive}/${segmentos[0].segmento}`
     }
 
     // Actualizar el archivo m3u8 respectivo al live
-    fs.writeFile(`${__dirname}/src/lives/${nombreLive}/live.m3u8`, file, function (err) {
+    fs.writeFile(`${__dirname}${PathLives}/${nombreLive}/live.m3u8`, filem3u8, function (err) {
         if (err) {
             return console.log(err);
         }
@@ -356,10 +367,10 @@ Actualizador();
 // Live (str): Nombre del live
 // Cheaders (int): Cantidad de lineas superiores a ignorar
 async function cargarStream(Live,descripcion,Cheaders = 4){
-    const buffer = fs.readFileSync(`./src/lives/${Live}/output.m3u8`);
+    const buffer = fs.readFileSync(`.${PathLives}/${Live}/output.m3u8`);
     const fileContent = buffer.toString();
     filas = fileContent.split("\n")
-    await doqry(`INSERT INTO lives (Nombre,descripcion,portada_path,cantidad_fragmentos,fragmento_actual,activo) VALUES ('${Live}','${descripcion}','./src/lives/${Live}/portada.png', ${(filas.length-1)/2-(Cheaders-1)},0 , 1)`)
+    await doqry(`INSERT INTO lives (Nombre,descripcion,portada_path,cantidad_fragmentos,fragmento_actual,activo) VALUES ('${Live}','${descripcion}','.${PathLives}/${Live}/portada.png', ${(filas.length-1)/2-(Cheaders-1)},0 , 1)`)
     var id = await doqry("SELECT id FROM lives ORDER BY id DESC LIMIT 1 ")
     id = id[0].id;
     for(var i = Cheaders; i < filas.length-1 ; i+=2){
@@ -370,6 +381,7 @@ async function cargarStream(Live,descripcion,Cheaders = 4){
     }
 }
 
+// Funcion auxiliar para crear ejemplos
 async function RegistrarLives(){
     await cargarStream("Conejo","El conejo que vive en un paraíso bucólico de bonitas praderas, árboles fruteros, pájaros y mariposas, es llevado al límite por la destrucción y crueldad de tres pequeños roedores.")
     await cargarStream("Malcom","Los Cleavers son una familia peculiar. La madre es una crontroladora radical que grita, el padre es un hombre chistoso calvo, el hijo mayor, Francis huyo de la familia a corta edad, Reese es un criminal, Dewey es un cadete espacial y el joven Jamie es un chivo expiatorio. ")

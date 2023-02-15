@@ -50,13 +50,14 @@ body {
 }
 
 .container-content {
-    padding: 6vh 30px;
+    padding: 2vh 30px;
 }
 
 .container-lives {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    justify-content: space-around;
 }
 
 .text-live {
@@ -68,7 +69,7 @@ body {
 }
 
 .live {
-    width: 350px;
+    width: 28%;
     height: 350px;
     background-color: black;
     margin: 10px 10px;
@@ -90,69 +91,79 @@ body {
 .live-img {
     width: 100%;
     height: auto;
+    max-height: 95%;
+
 }
 
 .live-title {
     position: absolute;
-    bottom: 2%;
+    bottom: 0%;
     transform: translate(-0%, -0%);
     text-align: left;
-    padding: 5px 10px;
+    padding: 15px 10px;
+    background: #000000b5;
+    border-radius: 0px 0px 10px 10px;
+    
+}
+
+.live-name{
+}
+.live-description{
+    font-size:smaller;
+    margin-top:5px;
 }
 
 
-
-
 .blinking {
-    -webkit-animation: 2s blink ease infinite;
-    -moz-animation: 2s blink ease infinite;
-    -ms-animation: 2s blink ease infinite;
-    -o-animation: 2s blink ease infinite;
-    animation: 2s blink ease infinite;
-    
-  }
-  
-  @keyframes blink {
-    from, to {
-      opacity: 0;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-  
-  @-moz-keyframes blink {
-    from, to {
-      opacity: 0;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-  
-  @-webkit-keyframes blink {
-    from, to {
-      opacity: 0;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-  
-  @-ms-keyframes blink {
-    from, to {
-      opacity: 0;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-  
-  @-o-keyframes blink {
-    from, to {
-      opacity: 0;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
+-webkit-animation: 1s blink ease infinite;
+-moz-animation: 1s blink ease infinite;
+-ms-animation: 1s blink ease infinite;
+-o-animation: 1s blink ease infinite;
+animation: 1s blink ease infinite;
+
+}
+
+@keyframes blink {
+from, to {
+    opacity: 0;
+}
+50% {
+    opacity: 1;
+}
+}
+
+@-moz-keyframes blink {
+from, to {
+    opacity: 0;
+}
+50% {
+    opacity: 1;
+}
+}
+
+@-webkit-keyframes blink {
+from, to {
+    opacity: 0;
+}
+50% {
+    opacity: 1;
+}
+}
+
+@-ms-keyframes blink {
+from, to {
+    opacity: 0;
+}
+50% {
+    opacity: 1;
+}
+}
+
+@-o-keyframes blink {
+from, to {
+    opacity: 0;
+}
+50% {
+    opacity: 1;
+}
+}

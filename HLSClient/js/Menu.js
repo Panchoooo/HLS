@@ -52,7 +52,7 @@ async function getLives() {
 
           var descripcion = lives[i]["descripcion"]
           if (descripcion.length > 155) {
-            descripcion = descripcion.slice(0, 155) + "..."
+            descripcion = descripcion.slice(0, 150) + "..."
           }
 
 
@@ -60,7 +60,7 @@ async function getLives() {
               <div class="live" onclick="SelectLive('${lives[i]["Nombre"]}')" >
                 <img class="live-img" src="http://192.168.1.90:3000/portada/${lives[i]["Nombre"]}" >
                 <div class="live-title">
-                    <b>${lives[i]["Nombre"]}</b><br><div style="font-size:smaller">${descripcion}</div>
+                    <b class="live-name">${lives[i]["Nombre"]}</b><br><div class="live-description" style="">${descripcion}</div>
                 </div>
               </div>
               `
