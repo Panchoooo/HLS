@@ -20,9 +20,13 @@ HLS Server:
     PATH_LIVES=/src/lives
 
 HLS Cliente:
+
     Login : http://localhost:8000/Login.html
+
     Registro : http://localhost:8000/Registro.html
+
     Menu : http://localhost:8000/Menu.html
+
     Player : http://localhost:8000/Player.html
 
     Usuarios Registrados:
